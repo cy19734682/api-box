@@ -83,31 +83,7 @@ export default function MockPanel() {
 			}
 		})
 	}
-
-	/**
-	 * 示例数据
-	 */
-	const handleGenerateRandomData = () => {
-		const template = `{
-		"id": "{{string.uuid}}",
-		"name": "{{person.fullName}}",
-		"email": "{{internet.email}}",
-		"phone": "{{phone.number}}",
-		"address": {
-			"street": "{{location.street}}",
-			"city": "{{location.city}}",
-			"state": "{{location.state}}",
-			"zipCode": "{{location.zipCode}}"
-		},
-		"company": "{{company.name}}",
-		"createdAt": "{{date.recent}}"
-	}`
-		setNewMock((prev) => ({
-			...prev,
-			response: template
-		}))
-		setIsValidJson(true)
-	}
+	
 
 	/**
 	 * 格式化JSON
@@ -344,12 +320,6 @@ export default function MockPanel() {
 						<label className="block text-sm font-medium text-gray-700">响应结构 *</label>
 						<div className="flex space-x-3">
 							<button
-								onClick={handleGenerateRandomData}
-								className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-lg text-sm hover:bg-indigo-200 flex items-center"
-							>
-								<FaMagic className="mr-1" /> 示例数据
-							</button>
-							<button
 								onClick={handleFormat}
 								className="px-3 py-1 bg-sky-100 text-sky-700 rounded-lg text-sm hover:bg-sky-200 flex items-center"
 							>
@@ -369,7 +339,7 @@ export default function MockPanel() {
 						value={newMock.response}
 						onChange={handleInputChange}
 						placeholder="输入JSON响应结构"
-						className={`w-full h-64 border ${
+						className={`w-full h-40 border ${
 							isValidJson ? 'border-gray-300' : 'border-red-500'
 						} rounded-lg px-4 py-3 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500`}
 					/>

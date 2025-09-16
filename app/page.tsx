@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { AppProviders } from '@/app/components/commons/AppProviders'
 import RequestPanel from '@/app/components/RequestPanel'
 import ResponsePanel from '@/app/components/ResponsePanel'

@@ -52,6 +52,6 @@ coverage
 .stylelintcache
 
 # Misc
-.DS_Store
 Thumbs.db
 /pnpm-lock.yaml
+/app/data

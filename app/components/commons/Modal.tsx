@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import ReactDOM from 'react-dom'
-import { CloseIcon } from '@/app/styles/SvgIcon'
+import { FaXmark } from 'react-icons/fa6'
 import { useStackStore } from '@/app/store'
 
 interface ModalProps {
@@ -23,16 +23,16 @@ const Modal: React.FC<ModalProps> = ({
 	className = 'max-w-md'
 }) => {
 	const { generateId, stack, pushStack, removeStack } = useStackStore()
-  const stackId = useRef<string>(`modal-${generateId()}`).current
+	const stackId = useRef<string>(`modal-${generateId()}`).current
 	const modalRef = useRef<HTMLDivElement>(null)
 	const portalRoot = useRef<HTMLElement | null>(null)
 
 	// 创建稳定的关闭函数引用
-	const closeSelf = ()=>{
-    onClose()
-  }
-  
-  // 向堆栈中添加关闭事件
+	const closeSelf = () => {
+		onClose()
+	}
+
+	// 向堆栈中添加关闭事件
 	useEffect(() => {
 		if (isOpen) {
 			pushStack({
@@ -99,7 +99,7 @@ const Modal: React.FC<ModalProps> = ({
 					<div className="flex items-center justify-between border-b p-4">
 						<div className="text-xl font-semibold">{title}</div>
 						<button onClick={onClose} className="text-gray-500 hover:text-gray-700" aria-label="Close">
-							<CloseIcon />
+							<FaXmark size={24} />
 						</button>
 					</div>
 				)}

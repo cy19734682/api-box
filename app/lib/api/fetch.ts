@@ -37,13 +37,7 @@ export const apiFetch = async (url: string | URL | Request, method: any, options
 		const response: Response = await fetch(url, config)
 		clearTimeout(timeoutId)
 		if (!response.ok) {
-			let errorData
-			try {
-				errorData = await response.json()
-			} catch {
-				errorData = { error: `API请求失败: ${response.status} ${response.statusText}` }
-			}
-			throw new Error(errorData.error?.message || errorData.error || 'API请求失败')
+			new Error(`API请求失败: ${response.status} ${response.statusText}`)
 		}
 		return response
 	} catch (error: any) {

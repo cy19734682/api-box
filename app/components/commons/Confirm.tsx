@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect, useRef } from 'react'
-import { CloseIcon } from '@/app/styles/SvgIcon'
+import { FaXmark } from 'react-icons/fa6'
 import { useStackStore } from '@/app/store'
 
 // ===================== 类型定义 =====================
@@ -140,7 +140,7 @@ export const Confirm = ({
 								className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
 								aria-label="Close"
 							>
-								<CloseIcon />
+								<FaXmark size={24} />
 							</button>
 						)}
 					</div>
@@ -150,7 +150,7 @@ export const Confirm = ({
 				<div className="p-6">{content}</div>
 
 				{/* 底部按钮 */}
-				<div className="flex space-x-1 justify-end p-4 bg-gray-50 dark:bg-gray-700/50 rounded-b-xl">
+				<div className="flex space-x-1 justify-end p-4  rounded-b-xl">
 					<button onClick={handleSubmitClick} className="px-4 py-2 btn-primary text-white rounded-lg transition-colors">
 						确认
 					</button>
