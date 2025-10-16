@@ -107,8 +107,8 @@ export const useRequestStore = create<UseRequestStore>()(
 
 			addHistoryItem: (item) =>
 				set((state) => {
-					// 保留最近100条记录
-					const newHistory = [item, ...state.history].slice(0, 100)
+					// 保留最近50条记录
+					const newHistory = [item, ...state.history].slice(0, 50)
 					return { history: newHistory }
 				}),
 			clearHistory: () => set({ history: [] })

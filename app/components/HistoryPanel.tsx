@@ -17,11 +17,7 @@ export default function HistoryPanel() {
 	})
 
 	const formatTime = (timestamp: string) => {
-		const date = new Date(timestamp)
-		return date.toLocaleTimeString([], {
-			hour: '2-digit',
-			minute: '2-digit'
-		})
+		return new Date(timestamp).toISOString().replace('T', ' ').slice(0, 19)
 	}
 
 	return (

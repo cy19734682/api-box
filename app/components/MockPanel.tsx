@@ -1,8 +1,8 @@
 'use client'
 
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { faker } from '@faker-js/faker/locale/zh_CN'
-import { FaPlus, FaMagic, FaEye, FaFileCode } from 'react-icons/fa'
+import { FaEye, FaFileCode, FaPlus } from 'react-icons/fa'
 import { useToast } from '@/app/components/commons/Toast'
 import { useConfirm } from '@/app/components/commons/Confirm'
 import { apiFetch } from '@/app/lib/api/fetch'
@@ -14,6 +14,8 @@ const defaultMock = {
 	method: 'GET',
 	size: '1',
 	dataType: 'Object',
+	isPagination: '0',
+	pageParam: '{\n  "page":"page",\n  "size":"size",\n  "total":"total",\n  "data":"records"\n}',
 	response:
 		'{\n  "id": "{{string.uuid}}",\n  "name": "{{person.fullName}}",\n  "email": "{{internet.email}}",\n  "createdAt": "{{date.recent}}"\n}'
 }
@@ -44,7 +46,7 @@ export default function MockPanel() {
 			}
 		}
 		setNewMock((prev) => ({ ...prev, [name]: processedValue }))
-		if (name === 'response') {
+		if (name === 'response' || name === 'pageParam') {
 			try {
 				JSON.parse(value.replace(/{{.*?}}/g, 'placeholder'))
 				setIsValidJson(true)
@@ -66,6 +68,8 @@ export default function MockPanel() {
 			method: mock.method,
 			size: mock.size,
 			dataType: mock.dataType,
+			isPagination: mock.isPagination,
+			pageParam: mock.pageParam,
 			response: mock.response
 		})
 	}
@@ -83,15 +87,18 @@ export default function MockPanel() {
 			}
 		})
 	}
-	
 
 	/**
 	 * 格式化JSON
 	 */
 	const handleFormat = () => {
 		try {
-			const formattedJson = JSON.stringify(JSON.parse(newMock.response), null, 2)
-			setNewMock((prev) => ({ ...prev, response: formattedJson }))
+			const formatData: any = {}
+			formatData.response = JSON.stringify(JSON.parse(newMock.response), null, 2)
+			if (Number(newMock.isPagination) === 1) {
+				formatData.pageParam = JSON.stringify(JSON.parse(newMock.pageParam), null, 2)
+			}
+			setNewMock((prev) => ({ ...prev, ...formatData }))
 			setIsValidJson(true)
 		} catch (error) {
 			setIsValidJson(false)
@@ -110,10 +117,29 @@ export default function MockPanel() {
 				const fakeData = Array.from({ length: Number(newMock.size) }, () =>
 					JSON.parse(faker.helpers.fake(newMock.response))
 				)
-				setPreview(JSON.stringify(fakeData, null, 2))
+				const ret: any = {
+					code: 0
+				}
+				// 分页
+				if (Number(newMock.isPagination) === 1) {
+					const pageParam = JSON.parse(newMock.pageParam || '{}')
+					ret.data = {
+						[pageParam.page || 'page']: 1,
+						[pageParam.size || 'size']: Number(newMock.size),
+						[pageParam.total || 'total']: Number(newMock.size) * 5,
+						[pageParam.data || 'data']: fakeData
+					}
+				} else {
+					ret.data = fakeData
+				}
+				setPreview(JSON.stringify(ret, null, 2))
 			} else {
 				const fakeData = faker.helpers.fake(newMock.response)
-				setPreview(fakeData)
+				const ret = {
+					code: 0,
+					data: JSON.parse(fakeData)
+				}
+				setPreview(JSON.stringify(ret, null, 2))
 			}
 		} catch (error) {
 			setPreview(`错误: ${(error as Error).message}`)
@@ -173,12 +199,13 @@ export default function MockPanel() {
 			method: newMock.method,
 			size: newMock.size,
 			dataType: newMock.dataType,
+			isPagination: newMock.isPagination,
+			pageParam: newMock.pageParam,
 			response: newMock.response,
 			createdAt: new Date().toISOString()
 		}
 		await apiFetch(MOCK_API_URL, 'POST', { body: newEndpoint })
-		setNewMock(defaultMock)
-		setPreview(null)
+		handlePreview()
 		toast.success('创建成功')
 		await queryMock()
 	}
@@ -194,12 +221,13 @@ export default function MockPanel() {
 			method: newMock.method,
 			size: newMock.size,
 			dataType: newMock.dataType,
+			isPagination: newMock.isPagination,
+			pageParam: newMock.pageParam,
 			response: newMock.response,
 			createdAt: new Date().toISOString()
 		}
 		await apiFetch(MOCK_API_URL, 'PUT', { body: updatedMock })
-		setNewMock(defaultMock)
-		setPreview(null)
+		handleReset()
 		toast.success('更新成功')
 		await queryMock()
 	}
@@ -210,10 +238,19 @@ export default function MockPanel() {
 	async function deleteMock(id: string) {
 		const updatedMock = { id }
 		await apiFetch(MOCK_API_URL, 'DELETE', { body: updatedMock })
-		setNewMock(defaultMock)
-		setPreview(null)
+		handleReset()
 		toast.success('删除成功')
 		await queryMock()
+	}
+	
+	/**
+	 * 重置Mock接口
+	 */
+	function handleReset() {
+		setNewMock(defaultMock)
+		setPreview(null)
+		setEditingMockId(null)
+		setIsValidJson(true)
 	}
 
 	return (
@@ -228,6 +265,12 @@ export default function MockPanel() {
 					></path>
 				</svg>
 				创建Mock接口
+				<button
+					onClick={handleReset}
+					className="text-[14px] ml-5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-3 py-1 rounded-lg shadow-md"
+				>
+					重置
+				</button>
 			</h2>
 
 			<div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -304,6 +347,20 @@ export default function MockPanel() {
 							/>
 						</div>
 					)}
+					{newMock.dataType === 'Array' && (
+						<div>
+							<label className="block text-sm font-medium text-gray-700 mb-2">是否分页</label>
+							<select
+								name="isPagination"
+								value={newMock.isPagination}
+								onChange={handleInputChange}
+								className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+							>
+								<option value={1}>是</option>
+								<option value={0}>否</option>
+							</select>
+						</div>
+					)}
 					<div className="pt-2">
 						<button
 							onClick={handleCreateMock}
@@ -343,6 +400,20 @@ export default function MockPanel() {
 							isValidJson ? 'border-gray-300' : 'border-red-500'
 						} rounded-lg px-4 py-3 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500`}
 					/>
+					{Number(newMock.isPagination) === 1 && (
+						<>
+							<p className="text-sm">分页参数 *</p>
+							<textarea
+								name="pageParam"
+								value={newMock.pageParam}
+								onChange={handleInputChange}
+								placeholder="输入分页参数"
+								className={`w-full h-40 border ${
+									isValidJson ? 'border-gray-300' : 'border-red-500'
+								} rounded-lg px-4 py-3 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500`}
+							/>
+						</>
+					)}
 
 					{!isValidJson && <p className="text-red-500 text-sm mt-2">无效的JSON格式，请检查您的JSON语法</p>}
 

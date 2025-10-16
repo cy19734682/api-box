@@ -11,7 +11,24 @@ const handler = async function (req: NextRequest) {
 			const mock: any = jsonDb.getOneByPath(path)
 			if (mock) {
 				if (mock.dataType === 'Array') {
-					mockData = Array.from({ length: Number(mock.size) }, () => JSON.parse(faker.helpers.fake(mock.response)))
+					const fakeData = Array.from({ length: Number(mock.size) }, () => JSON.parse(faker.helpers.fake(mock.response)))
+					if (Number(mock.isPagination) === 1) {
+						const { searchParams } = new URL(req.url);
+						const maxPage = 5
+						const page = Number(searchParams.get('page')) || 1;
+						const pageParam = JSON.parse(mock.pageParam || '{}')
+						mockData = {
+							[pageParam.page || 'page']: page,
+							[pageParam.size || 'size']: Number(mock.size),
+							[pageParam.total || 'total']: Number(mock.size) * maxPage,
+							[pageParam.data || 'data']: fakeData
+						}
+						if(page > 5){
+							mockData[pageParam.data || 'data'] = []
+						}
+					}else {
+						mockData = fakeData
+					}
 				} else {
 					mockData = JSON.parse(faker.helpers.fake(mock.response))
 				}
